@@ -1,0 +1,42 @@
+[
+  {
+    "id": "P1",
+    "title": "Acer Gaming Laptop",
+    "price": 55000,
+    "rating": 4.5,
+    "popularity": 90,
+    "brand": "Acer",
+    "category": "Laptop",
+    "attributes": {
+      "ram": "16GB",
+      "storage": "512GB",
+      "gpu": "RTX 3050"
+    }
+  },
+  {
+    "id": "P2",
+    "title": "HP Office Laptop",
+    "price": 45000,
+    "rating": 4.2,
+    "popularity": 75,
+    "brand": "HP",
+    "category": "Laptop",
+    "attributes": {
+      "ram": "8GB",
+      "storage": "256GB"
+    }
+  },
+  {
+    "id": "P3",
+    "title": "Acer Aspire",
+    "price": 48000,
+    "rating": 4.1,
+    "popularity": 70,
+    "brand": "Acer",
+    "category": "Laptop",
+    "attributes": {
+      "ram": "8GB",
+      "storage": "512GB"
+    }
+  }
+]

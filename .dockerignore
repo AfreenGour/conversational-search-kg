@@ -1,0 +1,11 @@
+stubs/
+fastapi/
+uvicorn/
+neo4j/
+pydantic/
+*.pyc
+__pycache__/
+env/
+venv/
+*.egg-info
+dist/

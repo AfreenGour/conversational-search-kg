@@ -1,0 +1,85 @@
+name: Docker Smoke Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install docker-compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Start docker-compose
+        run: |
+          docker-compose up --build -d
+
+      - name: Wait for services and run smoke test
+        env:
+          PYTHONUNBUFFERED: 1
+        run: |
+          set -euo pipefail
+          echo "Waiting for Neo4j bolt (7687) and KG service (8000)..."
+          python - <<'PY'
+import socket, time, urllib.request, sys
+def wait_tcp(host, port, timeout=120):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=5):
+                print('tcp ok', host, port)
+                return True
+        except Exception:
+            time.sleep(1)
+    return False
+
+def wait_http(url, timeout=120):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(url, timeout=5) as r:
+                print('http ok', url)
+                return True
+        except Exception:
+            time.sleep(1)
+    return False
+
+if not wait_tcp('localhost', 7687, timeout=120):
+    print('Neo4j bolt did not become ready', file=sys.stderr)
+    sys.exit(2)
+if not wait_http('http://localhost:8000/', timeout=120):
+    print('KG service did not become ready', file=sys.stderr)
+    sys.exit(3)
+print('Services ready')
+PY
+
+          echo "Installing Python deps..."
+          python -m pip install --upgrade pip
+          pip install -r kg_service/requirements.txt pytest
+
+          echo "Running docker smoke script..."
+          python tests/docker_smoke.py
+
+      - name: Capture docker-compose logs on failure
+        if: failure()
+        run: |
+          echo "=== KG Service logs ==="
+          docker-compose logs kg_service || true
+          echo "=== Neo4j logs ==="
+          docker-compose logs neo4j || true
+      - name: Tear down
+        if: always()
+        run: docker-compose down -v || true
