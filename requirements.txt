@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-neo4j
-pydantic
+redis>=5.0.0
 pytest
+requests
